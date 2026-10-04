@@ -1,0 +1,780 @@
+{
+ "DECam": {
+  "bands": [
+   "g",
+   "r",
+   "i",
+   "z",
+   "Y"
+  ],
+  "label": "Decam",
+  "standardised": false
+ },
+ "Els_Custom_W09_S2": {
+  "bands": [
+   "Halpha",
+   "Hbeta",
+   "O3",
+   "CHalpha",
+   "CHbeta",
+   "CO3",
+   "r",
+   "i"
+  ],
+  "label": "ElsCustomW09S2",
+  "standardised": false
+ },
+ "Euclid_VIS": {
+  "bands": [
+   "VIS"
+  ],
+  "label": "EuclidVis",
+  "standardised": false
+ },
+ "Gaia_2": {
+  "bands": [
+   "C1B431",
+   "C1B556",
+   "C1B655",
+   "C1B768",
+   "C1B916",
+   "C1M326",
+   "C1M344",
+   "C1M379",
+   "C1M395",
+   "C1M410",
+   "C1M467",
+   "C1M506",
+   "C1M515",
+   "C1M549",
+   "C1M656",
+   "C1M716",
+   "C1M747",
+   "C1M825",
+   "C1M861",
+   "C1M965"
+  ],
+  "label": "Gaia2",
+  "standardised": false
+ },
+ "Gaia_DR3_Vega": {
+  "bands": [
+   "G",
+   "BP",
+   "RP"
+  ],
+  "label": "GaiaDr3Vega",
+  "standardised": false
+ },
+ "HST_ACSWFC": {
+  "bands": [
+   "f435w",
+   "f475w",
+   "f550m",
+   "f555w",
+   "f606w",
+   "f625w",
+   "f775w",
+   "f814w",
+   "f850lp"
+  ],
+  "label": "HstAcswfc",
+  "standardised": false
+ },
+ "HST_HUGS_Std": {
+  "bands": [
+   "f438w",
+   "f606w",
+   "f814w"
+  ],
+  "label": "HstHugsStd",
+  "standardised": true
+ },
+ "HST_WFC3UVIS": {
+  "bands": [
+   "f336w",
+   "f343n",
+   "f350lp",
+   "f390m",
+   "f390w",
+   "f395n",
+   "f410m",
+   "f438w",
+   "f467m",
+   "f475w",
+   "f475x",
+   "f547m",
+   "f555w",
+   "f600lp",
+   "f606w",
+   "f621m",
+   "f625w",
+   "f657n",
+   "f665n",
+   "f673n",
+   "f680n",
+   "f689m",
+   "f763m",
+   "f775w",
+   "f814w",
+   "f845m",
+   "f850lz",
+   "f373n",
+   "f469n",
+   "f487n",
+   "f502n",
+   "f631n",
+   "f645n",
+   "f656n",
+   "f658n"
+  ],
+  "label": "HstWfc3uvis",
+  "standardised": false
+ },
+ "HST_WFPC2": {
+  "bands": [
+   "f300w",
+   "f336w",
+   "f380w",
+   "f410m",
+   "f439w",
+   "f450w",
+   "f467m",
+   "f547m",
+   "f555w",
+   "f569w",
+   "f606w",
+   "f622w",
+   "f675w",
+   "f702w",
+   "f785lp",
+   "f791w",
+   "f814w",
+   "f850lp"
+  ],
+  "label": "HstWfpc2",
+  "standardised": false
+ },
+ "H_Custom": {
+  "bands": [
+   "Hbeta_1.0",
+   "Hbeta_2.0",
+   "Hbeta_3.0",
+   "Hbeta_4.0",
+   "Hbeta_5.0",
+   "Hbeta_6.0",
+   "Hbeta_7.0",
+   "Hbeta_8.0",
+   "Hbeta_9.0",
+   "Hbeta_10.0",
+   "Hbeta_11.0",
+   "Hbeta_12.0",
+   "Hbeta_13.0",
+   "Hbeta_14.0",
+   "Hbeta_15.0",
+   "Hbeta_16.0",
+   "Hbeta_17.0",
+   "Hbeta_18.0",
+   "Hbeta_19.0",
+   "Hbeta_20.0",
+   "Hbeta_21.0",
+   "Hbeta_22.0",
+   "Hbeta_23.0",
+   "Hbeta_24.0",
+   "Hbeta_25.0",
+   "Halpha_1.0",
+   "Halpha_2.0",
+   "Halpha_3.0",
+   "Halpha_4.0",
+   "Halpha_5.0",
+   "Halpha_6.0",
+   "Halpha_7.0",
+   "Halpha_8.0",
+   "Halpha_9.0",
+   "Halpha_10.0",
+   "Halpha_11.0",
+   "Halpha_12.0",
+   "Halpha_13.0",
+   "Halpha_14.0",
+   "Halpha_15.0",
+   "Halpha_16.0",
+   "Halpha_17.0",
+   "Halpha_18.0",
+   "Halpha_19.0",
+   "Halpha_20.0",
+   "Halpha_21.0",
+   "Halpha_22.0",
+   "Halpha_23.0",
+   "Halpha_24.0",
+   "Halpha_25.0"
+  ],
+  "label": "HCustom",
+  "standardised": false
+ },
+ "Halpha_Custom_AB": {
+  "bands": [
+   "Halpha01nm",
+   "Halpha02nm",
+   "Halpha03nm",
+   "Halpha04nm",
+   "Halpha05nm",
+   "Halpha06nm",
+   "Halpha07nm",
+   "Halpha08nm",
+   "Halpha09nm",
+   "Halpha10nm"
+  ],
+  "label": "HalphaCustomAb",
+  "standardised": false
+ },
+ "Hipparcos_Tycho": {
+  "bands": [
+   "Hp",
+   "BT",
+   "VT"
+  ],
+  "label": "HipparcosTycho",
+  "standardised": false
+ },
+ "IPHAS": {
+  "bands": [
+   "Ha",
+   "r",
+   "i"
+  ],
+  "label": "Iphas",
+  "standardised": false
+ },
+ "JKC": {
+  "bands": [
+   "U",
+   "B",
+   "V",
+   "R",
+   "I"
+  ],
+  "label": "Jkc",
+  "standardised": false
+ },
+ "JKC_Std": {
+  "bands": [
+   "U",
+   "B",
+   "V",
+   "R",
+   "I"
+  ],
+  "label": "JkcStd",
+  "standardised": true
+ },
+ "JPAS": {
+  "bands": [
+   "uJava",
+   "u",
+   "J0378",
+   "J0390",
+   "J0400",
+   "J0410",
+   "J0420",
+   "J0430",
+   "J0440",
+   "J0450",
+   "J0460",
+   "J0470",
+   "J0480",
+   "gSDSS",
+   "J0490",
+   "J0500",
+   "J0510",
+   "J0520",
+   "J0530",
+   "J0540",
+   "J0550",
+   "J0560",
+   "J0570",
+   "J0580",
+   "J0590",
+   "J0600",
+   "J0610",
+   "J0620",
+   "rSDSS",
+   "J0630",
+   "J0640",
+   "J0650",
+   "J0660",
+   "J0670",
+   "J0680",
+   "J0690",
+   "J0700",
+   "J0710",
+   "J0720",
+   "J0730",
+   "J0740",
+   "J0750",
+   "J0760",
+   "iSDSS",
+   "J0770",
+   "J0780",
+   "J0790",
+   "J0800",
+   "J0810",
+   "J0820",
+   "J0830",
+   "J0840",
+   "J0850",
+   "J0860",
+   "J0870",
+   "J0880",
+   "J0890",
+   "J0900",
+   "J0910",
+   "J1007"
+  ],
+  "label": "Jpas",
+  "standardised": false
+ },
+ "JPLUS": {
+  "bands": [
+   "uJAVA",
+   "J0378",
+   "J0395",
+   "J0410",
+   "J0430",
+   "gJPLUS",
+   "J0515",
+   "rJPLUS",
+   "J0660",
+   "iJPLUS",
+   "J0861",
+   "zJPLUS"
+  ],
+  "label": "Jplus",
+  "standardised": false
+ },
+ "JWST_NIRCAM": {
+  "bands": [
+   "F070W",
+   "F090W"
+  ],
+  "label": "JwstNircam",
+  "standardised": false
+ },
+ "LSST": {
+  "bands": [
+   "u",
+   "g",
+   "r",
+   "i",
+   "z",
+   "y"
+  ],
+  "label": "Lsst",
+  "standardised": false
+ },
+ "PanSTARRS1": {
+  "bands": [
+   "gp",
+   "rp",
+   "ip",
+   "zp",
+   "yp"
+  ],
+  "label": "Panstarrs1",
+  "standardised": false
+ },
+ "PanSTARRS1_Std": {
+  "bands": [
+   "gp",
+   "rp",
+   "ip",
+   "zp",
+   "yp"
+  ],
+  "label": "Panstarrs1Std",
+  "standardised": true
+ },
+ "Pristine": {
+  "bands": [
+   "CaHK"
+  ],
+  "label": "Pristine",
+  "standardised": false
+ },
+ "SDSS": {
+  "bands": [
+   "u",
+   "g",
+   "r",
+   "i",
+   "z"
+  ],
+  "label": "Sdss",
+  "standardised": false
+ },
+ "SDSS_Std": {
+  "bands": [
+   "u",
+   "g",
+   "r",
+   "i",
+   "z"
+  ],
+  "label": "SdssStd",
+  "standardised": true
+ },
+ "Sky_Mapper": {
+  "bands": [
+   "u",
+   "u2",
+   "v",
+   "g",
+   "r",
+   "i",
+   "z"
+  ],
+  "label": "SkyMapper",
+  "standardised": false
+ },
+ "Stromgren": {
+  "bands": [
+   "u",
+   "v",
+   "b",
+   "y"
+  ],
+  "label": "Stromgren",
+  "standardised": false
+ },
+ "Stromgren_Std": {
+  "bands": [
+   "v",
+   "b",
+   "y"
+  ],
+  "label": "StromgrenStd",
+  "standardised": true
+ },
+ "WFIRST": {
+  "bands": [
+   "R062",
+   "Z087"
+  ],
+  "label": "Wfirst",
+  "standardised": false
+ },
+ "_colour_equations": {
+  "JkcStd": {
+   "colour_index": "B-V",
+   "colour_range": [
+    -0.2295,
+    1.7175
+   ],
+   "filter": "U",
+   "poly": [
+    -0.0172558427,
+    -0.1488531828,
+    1.5400180817,
+    -4.3245787621,
+    4.8665990829,
+    -1.3708422184,
+    -0.7246112227,
+    0.4650485814,
+    -0.0881477892
+   ]
+  },
+  "SdssStd": {
+   "colour_index": "g-i",
+   "colour_range": [
+    -0.584,
+    2.689
+   ],
+   "filter": "u",
+   "poly": [
+    0.020204711705,
+    -0.178981602192,
+    0.569891095161,
+    -0.681802034378,
+    -0.134894728661,
+    0.852401971817,
+    -0.201533541083,
+    -0.047933161259,
+    -0.285368949175
+   ]
+  }
+ },
+ "_correction_bands": {
+  "ElsCustomW09S2": [
+   "Halpha",
+   "Hbeta",
+   "O3",
+   "CHalpha",
+   "CHbeta",
+   "CO3",
+   "r",
+   "i"
+  ],
+  "EuclidVis": [
+   "VIS"
+  ],
+  "Gaia2": [
+   "C1B431",
+   "C1B556",
+   "C1B655",
+   "C1B768",
+   "C1B916",
+   "C1M326",
+   "C1M344",
+   "C1M379",
+   "C1M395",
+   "C1M410",
+   "C1M467",
+   "C1M506",
+   "C1M515",
+   "C1M549",
+   "C1M656",
+   "C1M716",
+   "C1M747",
+   "C1M825",
+   "C1M861",
+   "C1M965"
+  ],
+  "GaiaDr3Vega": [
+   "G",
+   "BP",
+   "RP"
+  ],
+  "HipparcosTycho": [
+   "Hp",
+   "BT",
+   "VT"
+  ],
+  "HstAcswfc": [
+   "f435w",
+   "f475w",
+   "f550m",
+   "f555w",
+   "f606w",
+   "f625w",
+   "f775w",
+   "f814w",
+   "f850lp"
+  ],
+  "HstHugsStd": [
+   "f438w",
+   "f606w",
+   "f814w"
+  ],
+  "HstWfc3uvis": [
+   "f336w",
+   "f343n",
+   "f350lp",
+   "f390m",
+   "f390w",
+   "f395n",
+   "f410m",
+   "f438w",
+   "f467m",
+   "f475w",
+   "f475x",
+   "f547m",
+   "f555w",
+   "f600lp",
+   "f606w",
+   "f621m",
+   "f625w",
+   "f657n",
+   "f665n",
+   "f673n",
+   "f680n",
+   "f689m",
+   "f763m",
+   "f775w",
+   "f814w",
+   "f845m",
+   "f850lz",
+   "f373n",
+   "f469n",
+   "f487n",
+   "f502n",
+   "f631n",
+   "f645n",
+   "f656n",
+   "f658n"
+  ],
+  "HstWfpc2": [
+   "f300w",
+   "f336w",
+   "f380w",
+   "f410m",
+   "f439w",
+   "f450w",
+   "f467m",
+   "f547m",
+   "f555w",
+   "f569w",
+   "f606w",
+   "f622w",
+   "f675w",
+   "f702w",
+   "f785lp",
+   "f791w",
+   "f814w",
+   "f850lp"
+  ],
+  "Iphas": [
+   "Ha",
+   "r",
+   "i"
+  ],
+  "Jkc": [
+   "U",
+   "B",
+   "V",
+   "R",
+   "I"
+  ],
+  "JkcStd": [
+   "U",
+   "B",
+   "V",
+   "R",
+   "I"
+  ],
+  "Jpas": [
+   "uJava",
+   "u",
+   "J0378",
+   "J0390",
+   "J0400",
+   "J0410",
+   "J0420",
+   "J0430",
+   "J0440",
+   "J0450",
+   "J0460",
+   "J0470",
+   "J0480",
+   "gSDSS",
+   "J0490",
+   "J0500",
+   "J0510",
+   "J0520",
+   "J0530",
+   "J0540",
+   "J0550",
+   "J0560",
+   "J0570",
+   "J0580",
+   "J0590",
+   "J0600",
+   "J0610",
+   "J0620",
+   "rSDSS",
+   "J0630",
+   "J0640",
+   "J0650",
+   "J0660",
+   "J0670",
+   "J0680",
+   "J0690",
+   "J0700",
+   "J0710",
+   "J0720",
+   "J0730",
+   "J0740",
+   "J0750",
+   "J0760",
+   "iSDSS",
+   "J0770",
+   "J0780",
+   "J0790",
+   "J0800",
+   "J0810",
+   "J0820",
+   "J0830",
+   "J0840",
+   "J0850",
+   "J0860",
+   "J0870",
+   "J0880",
+   "J0890",
+   "J0900",
+   "J0910",
+   "J1007"
+  ],
+  "Jplus": [
+   "uJAVA",
+   "J0378",
+   "J0395",
+   "J0410",
+   "J0430",
+   "gJPLUS",
+   "J0515",
+   "rJPLUS",
+   "J0660",
+   "iJPLUS",
+   "J0861",
+   "zJPLUS"
+  ],
+  "JwstNircam": [
+   "F070W",
+   "F090W"
+  ],
+  "Panstarrs1": [
+   "gp",
+   "rp",
+   "ip",
+   "zp",
+   "yp"
+  ],
+  "Panstarrs1Std": [
+   "gp",
+   "rp",
+   "ip",
+   "zp",
+   "yp"
+  ],
+  "Pristine": [
+   "CaHK"
+  ],
+  "Sdss": [
+   "u",
+   "g",
+   "r",
+   "i",
+   "z"
+  ],
+  "SdssStd": [
+   "u",
+   "g",
+   "r",
+   "i",
+   "z"
+  ],
+  "SkyMapper": [
+   "u",
+   "u2",
+   "v",
+   "g",
+   "r",
+   "i",
+   "z"
+  ],
+  "Stromgren": [
+   "u",
+   "v",
+   "b",
+   "y"
+  ],
+  "StromgrenStd": [
+   "v",
+   "b",
+   "y"
+  ],
+  "Wfirst": [
+   "R062",
+   "Z087"
+  ]
+ },
+ "_gaiaxpy_version": "2.1.4"
+}
