@@ -25,11 +25,21 @@ def sync():
 
 for dtype in (torch.float32, torch.float64):
     xp = XPSpectra.from_batch(batch, device=device, dtype=dtype)
-    for name, fn in (
-        ("calibrate", lambda xp=xp: xp.calibrate()),
-        ("calibrate+cov factor", lambda xp=xp: xp.calibrate(with_correlation=True)["factor"]),
-        ("generate SDSS_Std", lambda xp=xp: xp.generate("SDSS_Std")),
+    xp_cov = xp[: min(n, 8192)]
+    for count, name, fn in (
+        (n, "calibrate", lambda xp=xp: xp.calibrate()),
+        (len(xp_cov), "calibrate+cov factor", lambda x=xp_cov: x.calibrate(with_correlation="factor")["factor"]),
+        (n, "generate DR3_SDSS_Std", lambda xp=xp: xp.generate("DR3_SDSS_Std")),
         (
+            n,
+            "generate 4 sys + err_corr",
+            lambda xp=xp: xp.generate(
+                ["DR3_SDSS_Std", "DR3_JKC_Std", "DR3_DECam", "DR3_PanSTARRS1_Std"],
+                error_correction=True,
+            ),
+        ),
+        (
+            n,
             "eval 2000 custom wl",
             lambda xp=xp, dtype=dtype: xp(torch.linspace(340, 1000, 2000, device=device, dtype=dtype)),
         ),
@@ -40,8 +50,11 @@ for dtype in (torch.float32, torch.float64):
         fn()
         sync()
         print(
-            f"{device} {str(dtype)[6:]} {name}: {n / (time.perf_counter() - start):,.0f} sources/s"
+            f"{device} {str(dtype)[6:]} {name}: {count / (time.perf_counter() - start):,.0f} sources/s"
         )
+    del xp, xp_cov
+    if device == "cuda":
+        torch.cuda.empty_cache()
 
 try:
     import gaiaxpy
@@ -49,10 +62,15 @@ try:
     m = min(n, 300)
     f = frame(make_batch(m, realistic=False))
     start = time.perf_counter()
-    gaiaxpy.calibrate(f, save_file=False)
+    gaiaxpy.calibrate(f, save_file=False, disable_info=True)
     print(f"gaiaxpy calibrate: {m / (time.perf_counter() - start):,.0f} sources/s")
     start = time.perf_counter()
-    gaiaxpy.generate(f, photometric_system=gaiaxpy.PhotometricSystem.SDSS_Std, save_file=False)
-    print(f"gaiaxpy generate SDSS_Std: {m / (time.perf_counter() - start):,.0f} sources/s")
+    gaiaxpy.generate(
+        f,
+        photometric_system=gaiaxpy.PhotometricSystem.DR3_SDSS_Std,
+        save_file=False,
+        disable_info=True,
+    )
+    print(f"gaiaxpy generate DR3_SDSS_Std: {m / (time.perf_counter() - start):,.0f} sources/s")
 except ImportError:
     pass

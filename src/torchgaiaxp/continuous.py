@@ -14,7 +14,8 @@ transmission is evaluated on whatever grid the comparison needs.
 Uncertainties propagate to first order through every operation:
 
 * ``factor`` ``[..., G, K]`` -- correlated part (XP: the exact covariance
-  factor, ``cov = F F^T``); independent operands concatenate along ``K``;
+  factor, ``cov = F F^T``); expressions sharing the same XP spectrum combine
+  their Jacobians coherently, while independent operands concatenate along ``K``;
 * ``variance`` ``[..., G]`` -- independent per-point part (a tabulated
   spectrum's errors; interpolation keeps it diagonal, an approximation).
 
@@ -28,7 +29,7 @@ from __future__ import annotations
 import math
 import operator
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import torch
 from torch import Tensor
@@ -39,17 +40,18 @@ class Evaluation:
     flux: Tensor
     factor: Tensor | None = None  # [..., G, K]
     variance: Tensor | None = None  # [..., G]
+    _factor_terms: dict[int, Tensor] | None = field(default=None, repr=False, compare=False)
 
     @property
     def error(self) -> Tensor | None:
         if self.factor is None and self.variance is None:
             return None
-        total = 0.0
+        total: Tensor | float = 0.0
         if self.factor is not None:
             total = total + self.factor.square().sum(-1)
         if self.variance is not None:
             total = total + self.variance
-        return torch.as_tensor(total).sqrt()
+        return torch.as_tensor(total).clamp_min(0.0).sqrt()
 
     def covariance(self) -> Tensor | None:
         """Dense ``[..., G, G]``: ``F F^T + diag(variance)``."""
@@ -62,6 +64,53 @@ class Evaluation:
             diag = torch.diag_embed(self.variance)
             cov = diag if cov is None else cov + diag
         return cov
+
+
+def _factor_terms_of(ev: Evaluation) -> dict[int, Tensor]:
+    if ev._factor_terms is not None:
+        return ev._factor_terms
+    if ev.factor is not None:
+        return {id(ev): ev.factor}
+    return {}
+
+
+def _combine_factor_terms(
+    ea: Evaluation,
+    eb: Evaluation,
+    scale_a: Tensor | float | None,
+    scale_b: Tensor | float | None,
+) -> tuple[Tensor | None, dict[int, Tensor] | None]:
+    ta = _factor_terms_of(ea)
+    tb = _factor_terms_of(eb)
+    if not ta and not tb:
+        return None, None
+    merged: dict[int, Tensor] = {}
+    for key, fa in ta.items():
+        if scale_a is None:
+            merged[key] = fa
+        elif isinstance(scale_a, Tensor):
+            merged[key] = fa * scale_a.unsqueeze(-1)
+        else:
+            merged[key] = fa * scale_a
+    for key, fb in tb.items():
+        if scale_b is None:
+            sb = fb
+        elif isinstance(scale_b, Tensor):
+            sb = fb * scale_b.unsqueeze(-1)
+        else:
+            sb = fb * scale_b
+        if key in merged:
+            fa = merged[key]
+            shape = torch.broadcast_shapes(fa.shape[:-1], sb.shape[:-1])
+            merged[key] = fa.expand(*shape, fa.shape[-1]) + sb.expand(*shape, sb.shape[-1])
+        else:
+            merged[key] = sb
+    terms = list(merged.values())
+    if len(terms) == 1:
+        return terms[0], merged
+    shape = torch.broadcast_shapes(*(f.shape[:-1] for f in terms))
+    cat = torch.cat([f.expand(*shape, f.shape[-1]) for f in terms], dim=-1)
+    return cat, merged
 
 
 class Continuous:
@@ -100,23 +149,32 @@ class Continuous:
 
         ``w = lambda`` for photon-counting detectors (``photon=True``), else 1.
         Returns ``(flux, error)`` with shapes ``[...]``; error is ``None`` when
-        the spectrum carries no uncertainty.
+        the spectrum carries no uncertainty. NaN where the spectrum is missing
+        over nonzero passband support.
         """
         wl = _wl(wavelength)
         trans = passband.evaluate(wl, uncertainty=False).flux
         weight = trans * (wl if photon else torch.ones_like(wl))
-        norm = torch.trapezoid(weight, wl, dim=-1)
         ev = self.evaluate(wl)
-        flux = torch.trapezoid(torch.nan_to_num(ev.flux) * weight, wl, dim=-1) / norm
+        wl_f = wl.to(ev.flux)
+        weight_f = weight.to(ev.flux)
+        norm = torch.trapezoid(weight_f, wl_f, dim=-1)
+        active = weight_f != 0
+        missing = (active & ~torch.isfinite(ev.flux)).any(-1) | (norm == 0)
+        flux = torch.trapezoid(torch.nan_to_num(ev.flux) * weight_f, wl_f, dim=-1) / norm
+        flux = torch.where(missing, torch.nan, flux)
         var = None
-        q = _trapezoid_weights(wl) * weight / norm.unsqueeze(-1)  # [..., G]
+        q = _trapezoid_weights(wl_f) * weight_f / norm.unsqueeze(-1)  # [..., G]
         if ev.factor is not None:
+            missing_f = missing | (active & ~torch.isfinite(ev.factor).all(-1)).any(-1)
             f = (q.unsqueeze(-1) * torch.nan_to_num(ev.factor)).sum(-2)
-            var = f.square().sum(-1)
+            var = torch.where(missing_f, torch.nan, f.square().sum(-1))
         if ev.variance is not None:
+            missing_v = missing | (active & ~torch.isfinite(ev.variance)).any(-1)
             v = (q.square() * torch.nan_to_num(ev.variance)).sum(-1)
+            v = torch.where(missing_v, torch.nan, v)
             var = v if var is None else var + v
-        return flux, None if var is None else var.sqrt()
+        return flux, None if var is None else var.clamp_min(0.0).sqrt()
 
     # -- algebra ---------------------------------------------------------------
     def __add__(self, other):
@@ -157,7 +215,10 @@ def as_continuous(x) -> Continuous:
 
 def _wl(wavelength) -> Tensor:
     if isinstance(wavelength, Tensor):
-        return wavelength if wavelength.is_floating_point() else wavelength.double()
+        if wavelength.is_floating_point():
+            return wavelength
+        dt = torch.float32 if wavelength.device.type == "mps" else torch.float64
+        return wavelength.to(dt)
     return torch.as_tensor(wavelength, dtype=torch.float64)
 
 
@@ -167,20 +228,6 @@ def _trapezoid_weights(x: Tensor) -> Tensor:
     w[..., :-1] += 0.5 * dx
     w[..., 1:] += 0.5 * dx
     return w
-
-
-def _scale_factor(factor: Tensor | None, scale: Tensor) -> Tensor | None:
-    return None if factor is None else factor * scale.unsqueeze(-1)
-
-
-def _cat_factors(*factors: Tensor | None) -> Tensor | None:
-    present = [f for f in factors if f is not None]
-    if not present:
-        return None
-    if len(present) == 1:
-        return present[0]
-    shape = torch.broadcast_shapes(*(f.shape[:-1] for f in present))
-    return torch.cat([f.expand(*shape, f.shape[-1]) for f in present], dim=-1)
 
 
 def _add_var(*vs: Tensor | None) -> Tensor | None:
@@ -205,33 +252,43 @@ class Combined(Continuous):
         fa, fb = ea.flux, eb.flux
         if self.op is operator.add or self.op is operator.sub:
             sign = 1.0 if self.op is operator.add else -1.0
+            factor, terms = (
+                _combine_factor_terms(ea, eb, None, sign) if uncertainty else (None, None)
+            )
             return Evaluation(
                 self.op(fa, fb),
-                _cat_factors(ea.factor, None if eb.factor is None else sign * eb.factor),
-                _add_var(ea.variance, eb.variance),
+                factor,
+                _add_var(ea.variance, eb.variance) if uncertainty else None,
+                terms,
             )
         if self.op is operator.mul:
-            return Evaluation(
-                fa * fb,
-                _cat_factors(_scale_factor(ea.factor, fb), _scale_factor(eb.factor, fa)),
+            factor, terms = (
+                _combine_factor_terms(ea, eb, fb, fa) if uncertainty else (None, None)
+            )
+            var = (
                 _add_var(
                     None if ea.variance is None else ea.variance * fb.square(),
                     None if eb.variance is None else eb.variance * fa.square(),
-                ),
+                )
+                if uncertainty
+                else None
             )
+            return Evaluation(fa * fb, factor, var, terms)
         if self.op is operator.truediv:
             inv = 1.0 / fb
-            return Evaluation(
-                fa * inv,
-                _cat_factors(
-                    _scale_factor(ea.factor, inv),
-                    _scale_factor(eb.factor, -fa * inv.square()),
-                ),
+            scale_b = -fa * inv.square()
+            factor, terms = (
+                _combine_factor_terms(ea, eb, inv, scale_b) if uncertainty else (None, None)
+            )
+            var = (
                 _add_var(
                     None if ea.variance is None else ea.variance * inv.square(),
-                    None if eb.variance is None else eb.variance * (fa * inv.square()).square(),
-                ),
+                    None if eb.variance is None else eb.variance * scale_b.square(),
+                )
+                if uncertainty
+                else None
             )
+            return Evaluation(fa * inv, factor, var, terms)
         raise ValueError(f"unsupported operator {self.op}")
 
     def to(self, device=None, dtype=None) -> Combined:
@@ -246,7 +303,7 @@ class Constant(Continuous):
 
     def evaluate(self, wavelength: Tensor, uncertainty: bool = True) -> Evaluation:
         v = self.value.to(device=wavelength.device, dtype=wavelength.dtype)
-        if v.dim() >= 1:
+        if v.dim() >= 1 and wavelength.dim() >= 1:
             v = v.unsqueeze(-1)  # [B] -> [B, 1]: one value per spectrum
         return Evaluation(v.expand(*torch.broadcast_shapes(v.shape, wavelength.shape)))
 
@@ -261,7 +318,8 @@ class Function(Continuous):
         self.fn = fn
 
     def evaluate(self, wavelength: Tensor, uncertainty: bool = True) -> Evaluation:
-        return Evaluation(torch.as_tensor(self.fn(wavelength)))
+        out = self.fn(wavelength)
+        return Evaluation(torch.as_tensor(out, device=wavelength.device, dtype=wavelength.dtype))
 
     def to(self, device=None, dtype=None) -> Function:
         return self
@@ -273,9 +331,26 @@ class Shifted(Continuous):
 
     def evaluate(self, wavelength: Tensor, uncertainty: bool = True) -> Evaluation:
         z = self.z.to(device=wavelength.device, dtype=wavelength.dtype)
+        squeeze_scalar = False
         if z.dim() >= 1:
             z = z.unsqueeze(-1)  # [B, 1]: per-spectrum shift
-        return self.base.evaluate(wavelength / (1.0 + z), uncertainty)
+            if wavelength.dim() == 0:
+                wavelength = wavelength.unsqueeze(0)
+                squeeze_scalar = True
+        ev = self.base.evaluate(wavelength / (1.0 + z), uncertainty)
+        if squeeze_scalar:
+            terms = (
+                None
+                if ev._factor_terms is None
+                else {k: v.squeeze(-2) for k, v in ev._factor_terms.items()}
+            )
+            return Evaluation(
+                ev.flux.squeeze(-1),
+                None if ev.factor is None else ev.factor.squeeze(-2),
+                None if ev.variance is None else ev.variance.squeeze(-1),
+                terms,
+            )
+        return ev
 
     def to(self, device=None, dtype=None) -> Shifted:
         return Shifted(self.base.to(device, dtype), self.z.to(device=device, dtype=dtype))
@@ -288,8 +363,15 @@ def _interp(x: Tensor, xp: Tensor, fp: Tensor) -> tuple[Tensor, Tensor, Tensor, 
     x_b = x.expand(*batch, x.shape[-1]).contiguous()
     i = torch.searchsorted(xp_b.detach(), x_b.detach()).clamp(1, xp.shape[-1] - 1)
     x0, x1 = xp_b.gather(-1, i - 1), xp_b.gather(-1, i)
-    t = (x_b - x0) / (x1 - x0)
-    inside = (x_b >= xp_b[..., :1]) & (x_b <= xp_b[..., -1:])
+    dx = x1 - x0
+    safe_dx = torch.where(dx != 0, dx, torch.ones_like(dx))
+    t = torch.where(dx != 0, (x_b - x0) / safe_dx, 0.0)
+    inside = (
+        (x_b >= xp_b[..., :1])
+        & (x_b <= xp_b[..., -1:])
+        & torch.isfinite(x0)
+        & torch.isfinite(x1)
+    )
     return i, t, inside, x_b
 
 
@@ -308,6 +390,9 @@ class Sampled(Continuous):
 
     def evaluate(self, wavelength: Tensor, uncertainty: bool = True) -> Evaluation:
         wl = wavelength.to(self.wavelength)
+        squeeze_scalar = wl.dim() == 0
+        if squeeze_scalar:
+            wl = wl.unsqueeze(0)
         i, t, inside, _ = _interp(wl, self.wavelength, self.flux)
         batch = i.shape[:-1]
         fp = self.flux.expand(*batch, self.flux.shape[-1])
@@ -320,6 +405,10 @@ class Sampled(Continuous):
             var = torch.where(
                 inside, (1 - t).square() * e0.square() + t.square() * e1.square(), math.nan
             )
+        if squeeze_scalar:
+            flux = flux.squeeze(-1)
+            if var is not None:
+                var = var.squeeze(-1)
         return Evaluation(flux, None, var)
 
     def smooth(self, resolution: float, *, oversample: int = 2) -> Sampled:
@@ -330,8 +419,13 @@ class Sampled(Continuous):
         bring a high-resolution spectrum to XP (R ~ 30-100) or RVS (~11,500).
         """
         wl = self.wavelength
+        if wl.shape[-1] < 2 or not torch.isfinite(wl).all() or (wl <= 0).any():
+            raise ValueError("wavelength must contain at least two finite positive points")
+        dlnl = torch.diff(torch.log(wl), dim=-1)
+        dlnl_in = dlnl.min()
+        if float(dlnl_in) <= 0:
+            raise ValueError("wavelength must be strictly increasing")
         lo, hi = wl[..., 0].min(), wl[..., -1].max()
-        dlnl_in = torch.diff(torch.log(wl), dim=-1).min()
         sigma = 1.0 / (resolution * 2.0 * math.sqrt(2.0 * math.log(2.0)))
         step = min(float(dlnl_in), sigma * 2.3548 / oversample)
         n = math.ceil(float(torch.log(hi / lo)) / step) + 1
@@ -346,7 +440,7 @@ class Sampled(Continuous):
         err = None
         if ev.variance is not None:
             var = _convolve(torch.nan_to_num(ev.variance), k.square())
-            err = torch.where(good > 0.99, var.sqrt(), math.nan)
+            err = torch.where(good > 0.99, var.clamp_min(0.0).sqrt() / good, math.nan)
         return Sampled(grid, flux, err, fill=self.fill)
 
     def to(self, device=None, dtype=None) -> Sampled:

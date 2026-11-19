@@ -4,7 +4,8 @@ As in GaiaXPy, the coefficient covariance here is built from the formal errors
 divided by the standard deviation of the least-squares solution,
 ``Sigma = diag(e / sigma) R diag(e / sigma)``. (Sampled errors use ``e`` itself:
 GaiaXPy rescales those by ``sigma`` afterwards, which cancels.) Sources whose
-correlation matrix is not positive definite give NaN where GaiaXPy gives None.
+correlation matrix is not positive definite or contains missing values give NaN
+where GaiaXPy gives None.
 """
 
 from __future__ import annotations
@@ -18,15 +19,17 @@ from .spectrum import unpack_correlations
 def inverse_square_root_covariance(
     errors: Tensor, correlations: Tensor, standard_deviation: Tensor | None = None
 ) -> Tensor:
-    """``L^-1 diag(sigma / e)`` ``[..., 55, 55]`` (GaiaXPy
+    """``L^-1 diag(sigma / e)`` ``[..., N, N]`` (GaiaXPy
     ``get_inverse_square_root_covariance_matrix``)."""
     e = errors if standard_deviation is None else errors / standard_deviation.unsqueeze(-1)
     corr = unpack_correlations(correlations, errors.shape[-1])
-    chol, info = torch.linalg.cholesky_ex(corr)
+    finite = torch.isfinite(e).all(-1) & torch.isfinite(corr).all((-1, -2))
+    chol, info = torch.linalg.cholesky_ex(torch.nan_to_num(corr))
     eye = torch.eye(chol.shape[-1], dtype=chol.dtype, device=chol.device).expand_as(chol)
     l_inv = torch.linalg.solve_triangular(chol, eye, upper=False)
     out = l_inv / e.unsqueeze(-2)
-    return torch.where((info == 0)[..., None, None], out, torch.nan)
+    valid = (info == 0) & finite
+    return torch.where(valid[..., None, None], out, torch.nan)
 
 
 def inverse_covariance(

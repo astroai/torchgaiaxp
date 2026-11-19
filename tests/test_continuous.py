@@ -1,4 +1,4 @@
-"""Continuous algebra, projection, devices and dtypes (no GaiaXPy needed)."""
+"""Continuous algebra, projection, devices, dtypes, and bug regression tests."""
 
 from __future__ import annotations
 
@@ -6,8 +6,9 @@ import math
 
 import pytest
 import torch
-from conftest import DEVICES, make_batch, planck
+from conftest import DEVICES, drop_bands, make_batch, planck
 
+import torchgaiaxp as tg
 from torchgaiaxp import Constant, Sampled, XPDesign, XPSpectra
 
 
@@ -26,7 +27,7 @@ def test_per_source_grids(batch):
         assert torch.allclose(flux[i], xp[i](grids[i])[0])
 
 
-def test_algebra_and_error_propagation(batch):
+def test_algebra_and_self_correlation(batch):
     xp = XPSpectra.from_batch(batch)
     wl = torch.linspace(450, 850, 41, dtype=torch.float64)
     hi_wl = torch.linspace(300, 1100, 40001, dtype=torch.float64)
@@ -36,12 +37,18 @@ def test_algebra_and_error_propagation(batch):
     ref = xp.evaluate(wl)
     t = trans(wl)
     assert torch.allclose(ev.flux, 2 * ref.flux * t + 1 - ref.flux / 4)
-    # Same XP factor appears twice (correlated): errors use the summed Jacobian.
+    # Same XP factor appears twice (correlated): factor stays rank-110 and ev.error is exact.
+    assert ev.factor.shape == ref.factor.shape
     jac = (2 * t - 0.25).unsqueeze(-1)
     combined = (jac * ref.factor).square().sum(-1).sqrt()
-    k = ref.factor.shape[-1]
-    summed = ev.factor[..., :k] + ev.factor[..., k:]
-    assert torch.allclose(summed.square().sum(-1).sqrt(), combined)
+    assert torch.allclose(ev.error, combined)
+
+    # (xp - xp) and (xp / xp) cancel correlated uncertainty to 0.
+    ev_diff = (xp - xp).evaluate(wl)
+    assert torch.allclose(ev_diff.flux, torch.zeros_like(ev_diff.flux))
+    assert float(ev_diff.error.abs().max()) == 0.0
+    ev_ratio = (xp / xp).evaluate(wl)
+    assert torch.allclose(ev_ratio.error, torch.zeros_like(ev_ratio.error), atol=1e-14)
 
 
 def test_sampled_errors_and_smoothing():
@@ -57,8 +64,11 @@ def test_sampled_errors_and_smoothing():
     assert math.isclose(float(eq_width), float(eq_in), rel_tol=0.02)  # EW conserved
     assert float(low.error[torch.isfinite(low.error)].max()) < 0.01
 
+    with pytest.raises(ValueError):
+        Sampled(torch.tensor([600.0, 500.0]), torch.ones(2)).smooth(100.0)
 
-def test_integrate_against_passband(batch):
+
+def test_integrate_against_passband_and_missing_band(batch):
     xp = XPSpectra.from_batch(batch)
     wl = torch.linspace(500, 700, 401, dtype=torch.float64)
     box = Sampled(wl, torch.ones_like(wl))
@@ -66,6 +76,56 @@ def test_integrate_against_passband(batch):
     ref = xp(wl)
     assert torch.allclose(flux, torch.trapezoid(ref, wl) / 200.0)
     assert (err > 0).all()
+
+    # Missing RP band integrated over 700-900 nm must return NaN (not 0.0).
+    xp_miss = XPSpectra.from_batch(drop_bands(make_batch(4, realistic=False)))
+    wl_red = torch.linspace(700, 900, 51, dtype=torch.float64)
+    box_red = Sampled(wl_red, torch.ones_like(wl_red))
+    f_red, e_red = xp_miss.integrate(box_red, wl_red, photon=False)
+    assert torch.isnan(f_red[1]) and torch.isnan(e_red[1])
+    assert torch.isfinite(f_red[0]) and torch.isfinite(e_red[0])
+
+
+def test_indexing_band_scalar_dispersion_and_autograd():
+    batch = drop_bands(make_batch(4, realistic=False))
+    xp = XPSpectra.from_batch(batch)
+
+    # Negative indexing & bounds check
+    last = xp[-1]
+    assert len(last) == 1
+    assert torch.allclose(last.coefficients[0], xp.coefficients[-1])
+    with pytest.raises(IndexError):
+        _ = xp[10]
+    with pytest.raises(IndexError):
+        _ = xp[-10]
+
+    # band() case-insensitivity & missing band -> NaN
+    wl = torch.linspace(700, 900, 21, dtype=torch.float64)
+    assert torch.allclose(xp.band("BP", wl), xp.band("bp", wl), equal_nan=True)
+    assert torch.isnan(xp.band("rp", wl)[1]).all()
+    with pytest.raises(ValueError):
+        xp.band("invalid", wl)
+
+    # 0D scalar wavelength
+    f0 = xp(torch.tensor(550.0, dtype=torch.float64))
+    assert f0.shape == (len(xp),)
+    assert torch.allclose(f0, xp(torch.tensor([550.0], dtype=torch.float64)).squeeze(-1), equal_nan=True)
+
+    # Dispersion preserves dtype/device & validates band
+    wl32 = torch.tensor([450.0, 600.0], dtype=torch.float32)
+    pwl32 = tg.wl_to_pwl("bp", wl32)
+    assert pwl32.dtype == torch.float32
+    assert tg.pwl_to_wl("bp", pwl32).dtype == torch.float32
+    with pytest.raises(ValueError):
+        tg.wl_range("bad")
+
+    # float32 _mag autograd stays finite even when another source in batch has negative flux
+    xp32 = XPSpectra.from_batch(make_batch(3, realistic=False), dtype=torch.float32)
+    xp32.coefficients.requires_grad_(True)
+    xp32.coefficients.data[0] = -xp32.coefficients.data[0].abs()
+    res = xp32.generate("DR3_SDSS")["DR3_SDSS"]
+    torch.nan_to_num(res["mag"][1:]).sum().backward()
+    assert torch.isfinite(xp32.coefficients.grad).all()
 
 
 def test_fit_recovers_xp_coefficients():
@@ -113,15 +173,16 @@ def test_devices_and_dtypes_are_honoured(batch, device, dtype):
         xp.calibrate()["flux"],
         xp.calibrate(wl)["flux_error"],
         xp.convert()["flux"],
-        xp.generate("SDSS_Std")["SDSS_Std"]["flux"],
+        xp.generate("DR3_SDSS_Std")["DR3_SDSS_Std"]["flux"],
         (xp * Sampled(wl, torch.ones_like(wl))).evaluate(wl).factor,
         XPDesign.absolute(wl).design,
+        tg.wl_to_pwl("bp", wl),
     ]
     for out in outputs:
         assert out.device.type == torch.device(device).type and out.dtype == dtype
     tol = 1e-3 if dtype == torch.float32 else 1e-10
-    want = ref(wl.double().cpu())
-    got = xp(wl).double().cpu()
+    want = ref(wl.cpu().double())
+    got = xp(wl).cpu().double()
     assert torch.allclose(got, want, rtol=tol, atol=tol * want.abs().max())
     moved = ref.to(device, dtype)
     assert moved.coefficients.device.type == torch.device(device).type

@@ -1,5 +1,5 @@
 {
- "DECam": {
+ "DR3_DECam": {
   "bands": [
    "g",
    "r",
@@ -7,10 +7,12 @@
    "z",
    "Y"
   ],
+  "full_label": "DR3_Decam",
   "label": "Decam",
+  "release": "dr3",
   "standardised": false
  },
- "Els_Custom_W09_S2": {
+ "DR3_Els_Custom_W09_S2": {
   "bands": [
    "Halpha",
    "Hbeta",
@@ -21,17 +23,21 @@
    "r",
    "i"
   ],
+  "full_label": "DR3_ElsCustomW09S2",
   "label": "ElsCustomW09S2",
+  "release": "dr3",
   "standardised": false
  },
- "Euclid_VIS": {
+ "DR3_Euclid_VIS": {
   "bands": [
    "VIS"
   ],
+  "full_label": "DR3_EuclidVis",
   "label": "EuclidVis",
+  "release": "dr3",
   "standardised": false
  },
- "Gaia_2": {
+ "DR3_Gaia_2": {
   "bands": [
    "C1B431",
    "C1B556",
@@ -54,19 +60,23 @@
    "C1M861",
    "C1M965"
   ],
+  "full_label": "DR3_Gaia2",
   "label": "Gaia2",
+  "release": "dr3",
   "standardised": false
  },
- "Gaia_DR3_Vega": {
+ "DR3_Gaia_Vega": {
   "bands": [
    "G",
    "BP",
    "RP"
   ],
-  "label": "GaiaDr3Vega",
+  "full_label": "DR3_GaiaVega",
+  "label": "GaiaVega",
+  "release": "dr3",
   "standardised": false
  },
- "HST_ACSWFC": {
+ "DR3_HST_ACSWFC": {
   "bands": [
    "f435w",
    "f475w",
@@ -78,19 +88,23 @@
    "f814w",
    "f850lp"
   ],
+  "full_label": "DR3_HstAcswfc",
   "label": "HstAcswfc",
+  "release": "dr3",
   "standardised": false
  },
- "HST_HUGS_Std": {
+ "DR3_HST_HUGS_Std": {
   "bands": [
    "f438w",
    "f606w",
    "f814w"
   ],
+  "full_label": "DR3_HstHugsStd",
   "label": "HstHugsStd",
+  "release": "dr3",
   "standardised": true
  },
- "HST_WFC3UVIS": {
+ "DR3_HST_WFC3UVIS": {
   "bands": [
    "f336w",
    "f343n",
@@ -128,10 +142,12 @@
    "f656n",
    "f658n"
   ],
+  "full_label": "DR3_HstWfc3uvis",
   "label": "HstWfc3uvis",
+  "release": "dr3",
   "standardised": false
  },
- "HST_WFPC2": {
+ "DR3_HST_WFPC2": {
   "bands": [
    "f300w",
    "f336w",
@@ -152,10 +168,12 @@
    "f814w",
    "f850lp"
   ],
+  "full_label": "DR3_HstWfpc2",
   "label": "HstWfpc2",
+  "release": "dr3",
   "standardised": false
  },
- "H_Custom": {
+ "DR3_H_Custom": {
   "bands": [
    "Hbeta_1.0",
    "Hbeta_2.0",
@@ -208,10 +226,12 @@
    "Halpha_24.0",
    "Halpha_25.0"
   ],
+  "full_label": "DR3_HCustom",
   "label": "HCustom",
+  "release": "dr3",
   "standardised": false
  },
- "Halpha_Custom_AB": {
+ "DR3_Halpha_Custom_AB": {
   "bands": [
    "Halpha01nm",
    "Halpha02nm",
@@ -224,28 +244,34 @@
    "Halpha09nm",
    "Halpha10nm"
   ],
+  "full_label": "DR3_HalphaCustomAb",
   "label": "HalphaCustomAb",
+  "release": "dr3",
   "standardised": false
  },
- "Hipparcos_Tycho": {
+ "DR3_Hipparcos_Tycho": {
   "bands": [
    "Hp",
    "BT",
    "VT"
   ],
+  "full_label": "DR3_HipparcosTycho",
   "label": "HipparcosTycho",
+  "release": "dr3",
   "standardised": false
  },
- "IPHAS": {
+ "DR3_IPHAS": {
   "bands": [
    "Ha",
    "r",
    "i"
   ],
+  "full_label": "DR3_Iphas",
   "label": "Iphas",
+  "release": "dr3",
   "standardised": false
  },
- "JKC": {
+ "DR3_JKC": {
   "bands": [
    "U",
    "B",
@@ -253,10 +279,12 @@
    "R",
    "I"
   ],
+  "full_label": "DR3_Jkc",
   "label": "Jkc",
+  "release": "dr3",
   "standardised": false
  },
- "JKC_Std": {
+ "DR3_JKC_Std": {
   "bands": [
    "U",
    "B",
@@ -264,10 +292,12 @@
    "R",
    "I"
   ],
+  "full_label": "DR3_JkcStd",
   "label": "JkcStd",
+  "release": "dr3",
   "standardised": true
  },
- "JPAS": {
+ "DR3_JPAS": {
   "bands": [
    "uJava",
    "u",
@@ -330,10 +360,12 @@
    "J0910",
    "J1007"
   ],
+  "full_label": "DR3_Jpas",
   "label": "Jpas",
+  "release": "dr3",
   "standardised": false
  },
- "JPLUS": {
+ "DR3_JPLUS": {
   "bands": [
    "uJAVA",
    "J0378",
@@ -348,18 +380,22 @@
    "J0861",
    "zJPLUS"
   ],
+  "full_label": "DR3_Jplus",
   "label": "Jplus",
+  "release": "dr3",
   "standardised": false
  },
- "JWST_NIRCAM": {
+ "DR3_JWST_NIRCAM": {
   "bands": [
    "F070W",
    "F090W"
   ],
+  "full_label": "DR3_JwstNircam",
   "label": "JwstNircam",
+  "release": "dr3",
   "standardised": false
  },
- "LSST": {
+ "DR3_LSST": {
   "bands": [
    "u",
    "g",
@@ -368,10 +404,12 @@
    "z",
    "y"
   ],
+  "full_label": "DR3_Lsst",
   "label": "Lsst",
+  "release": "dr3",
   "standardised": false
  },
- "PanSTARRS1": {
+ "DR3_PanSTARRS1": {
   "bands": [
    "gp",
    "rp",
@@ -379,10 +417,12 @@
    "zp",
    "yp"
   ],
+  "full_label": "DR3_Panstarrs1",
   "label": "Panstarrs1",
+  "release": "dr3",
   "standardised": false
  },
- "PanSTARRS1_Std": {
+ "DR3_PanSTARRS1_Std": {
   "bands": [
    "gp",
    "rp",
@@ -390,17 +430,21 @@
    "zp",
    "yp"
   ],
+  "full_label": "DR3_Panstarrs1Std",
   "label": "Panstarrs1Std",
+  "release": "dr3",
   "standardised": true
  },
- "Pristine": {
+ "DR3_Pristine": {
   "bands": [
    "CaHK"
   ],
+  "full_label": "DR3_Pristine",
   "label": "Pristine",
+  "release": "dr3",
   "standardised": false
  },
- "SDSS": {
+ "DR3_SDSS": {
   "bands": [
    "u",
    "g",
@@ -408,10 +452,12 @@
    "i",
    "z"
   ],
+  "full_label": "DR3_Sdss",
   "label": "Sdss",
+  "release": "dr3",
   "standardised": false
  },
- "SDSS_Std": {
+ "DR3_SDSS_Std": {
   "bands": [
    "u",
    "g",
@@ -419,10 +465,12 @@
    "i",
    "z"
   ],
+  "full_label": "DR3_SdssStd",
   "label": "SdssStd",
+  "release": "dr3",
   "standardised": true
  },
- "Sky_Mapper": {
+ "DR3_Sky_Mapper": {
   "bands": [
    "u",
    "u2",
@@ -432,38 +480,77 @@
    "i",
    "z"
   ],
+  "full_label": "DR3_SkyMapper",
   "label": "SkyMapper",
+  "release": "dr3",
   "standardised": false
  },
- "Stromgren": {
+ "DR3_Stromgren": {
   "bands": [
    "u",
    "v",
    "b",
    "y"
   ],
+  "full_label": "DR3_Stromgren",
   "label": "Stromgren",
+  "release": "dr3",
   "standardised": false
  },
- "Stromgren_Std": {
+ "DR3_Stromgren_Std": {
   "bands": [
    "v",
    "b",
    "y"
   ],
+  "full_label": "DR3_StromgrenStd",
   "label": "StromgrenStd",
+  "release": "dr3",
   "standardised": true
  },
- "WFIRST": {
+ "DR3_WFIRST": {
   "bands": [
    "R062",
    "Z087"
   ],
+  "full_label": "DR3_Wfirst",
   "label": "Wfirst",
+  "release": "dr3",
   "standardised": false
  },
+ "_aliases": {
+  "DECam": "DR3_DECam",
+  "Els_Custom_W09_S2": "DR3_Els_Custom_W09_S2",
+  "Euclid_VIS": "DR3_Euclid_VIS",
+  "Gaia_2": "DR3_Gaia_2",
+  "Gaia_DR3_Vega": "DR3_Gaia_Vega",
+  "Gaia_Vega": "DR3_Gaia_Vega",
+  "HST_ACSWFC": "DR3_HST_ACSWFC",
+  "HST_HUGS_Std": "DR3_HST_HUGS_Std",
+  "HST_WFC3UVIS": "DR3_HST_WFC3UVIS",
+  "HST_WFPC2": "DR3_HST_WFPC2",
+  "H_Custom": "DR3_H_Custom",
+  "Halpha_Custom_AB": "DR3_Halpha_Custom_AB",
+  "Hipparcos_Tycho": "DR3_Hipparcos_Tycho",
+  "IPHAS": "DR3_IPHAS",
+  "JKC": "DR3_JKC",
+  "JKC_Std": "DR3_JKC_Std",
+  "JPAS": "DR3_JPAS",
+  "JPLUS": "DR3_JPLUS",
+  "JWST_NIRCAM": "DR3_JWST_NIRCAM",
+  "LSST": "DR3_LSST",
+  "PanSTARRS1": "DR3_PanSTARRS1",
+  "PanSTARRS1_Std": "DR3_PanSTARRS1_Std",
+  "Pristine": "DR3_Pristine",
+  "SDSS": "DR3_SDSS",
+  "SDSS_Std": "DR3_SDSS_Std",
+  "Sky_Mapper": "DR3_Sky_Mapper",
+  "Stromgren": "DR3_Stromgren",
+  "Stromgren_Std": "DR3_Stromgren_Std",
+  "WFIRST": "DR3_WFIRST"
+ },
  "_colour_equations": {
-  "JkcStd": {
+  "DR3_JkcStd": {
    "colour_index": "B-V",
    "colour_range": [
     -0.2295,
@@ -482,7 +569,7 @@
     -0.0881477892
    ]
   },
-  "SdssStd": {
+  "DR3_SdssStd": {
    "colour_index": "g-i",
    "colour_range": [
     -0.584,
@@ -503,7 +590,7 @@
   }
  },
  "_correction_bands": {
-  "ElsCustomW09S2": [
+  "DR3_ElsCustomW09S2": [
    "Halpha",
    "Hbeta",
    "O3",
@@ -513,10 +600,10 @@
    "r",
    "i"
   ],
-  "EuclidVis": [
+  "DR3_EuclidVis": [
    "VIS"
   ],
-  "Gaia2": [
+  "DR3_Gaia2": [
    "C1B431",
    "C1B556",
    "C1B655",
@@ -538,17 +625,17 @@
    "C1M861",
    "C1M965"
   ],
-  "GaiaDr3Vega": [
+  "DR3_GaiaVega": [
    "G",
    "BP",
    "RP"
   ],
-  "HipparcosTycho": [
+  "DR3_HipparcosTycho": [
    "Hp",
    "BT",
    "VT"
   ],
-  "HstAcswfc": [
+  "DR3_HstAcswfc": [
    "f435w",
    "f475w",
    "f550m",
@@ -559,12 +646,12 @@
    "f814w",
    "f850lp"
   ],
-  "HstHugsStd": [
+  "DR3_HstHugsStd": [
    "f438w",
    "f606w",
    "f814w"
   ],
-  "HstWfc3uvis": [
+  "DR3_HstWfc3uvis": [
    "f336w",
    "f343n",
    "f350lp",
@@ -601,7 +688,7 @@
    "f656n",
    "f658n"
   ],
-  "HstWfpc2": [
+  "DR3_HstWfpc2": [
    "f300w",
    "f336w",
    "f380w",
@@ -621,26 +708,26 @@
    "f814w",
    "f850lp"
   ],
-  "Iphas": [
+  "DR3_Iphas": [
    "Ha",
    "r",
    "i"
   ],
-  "Jkc": [
+  "DR3_Jkc": [
    "U",
    "B",
    "V",
    "R",
    "I"
   ],
-  "JkcStd": [
+  "DR3_JkcStd": [
    "U",
    "B",
    "V",
    "R",
    "I"
   ],
-  "Jpas": [
+  "DR3_Jpas": [
    "uJava",
    "u",
    "J0378",
@@ -702,7 +789,7 @@
    "J0910",
    "J1007"
   ],
-  "Jplus": [
+  "DR3_Jplus": [
    "uJAVA",
    "J0378",
    "J0395",
@@ -716,42 +803,42 @@
    "J0861",
    "zJPLUS"
   ],
-  "JwstNircam": [
+  "DR3_JwstNircam": [
    "F070W",
    "F090W"
   ],
-  "Panstarrs1": [
+  "DR3_Panstarrs1": [
    "gp",
    "rp",
    "ip",
    "zp",
    "yp"
   ],
-  "Panstarrs1Std": [
+  "DR3_Panstarrs1Std": [
    "gp",
    "rp",
    "ip",
    "zp",
    "yp"
   ],
-  "Pristine": [
+  "DR3_Pristine": [
    "CaHK"
   ],
-  "Sdss": [
+  "DR3_Sdss": [
    "u",
    "g",
    "r",
    "i",
    "z"
   ],
-  "SdssStd": [
+  "DR3_SdssStd": [
    "u",
    "g",
    "r",
    "i",
    "z"
   ],
-  "SkyMapper": [
+  "DR3_SkyMapper": [
    "u",
    "u2",
    "v",
@@ -760,21 +847,22 @@
    "i",
    "z"
   ],
-  "Stromgren": [
+  "DR3_Stromgren": [
    "u",
    "v",
    "b",
    "y"
   ],
-  "StromgrenStd": [
+  "DR3_StromgrenStd": [
    "v",
    "b",
    "y"
   ],
-  "Wfirst": [
+  "DR3_Wfirst": [
    "R062",
    "Z087"
   ]
  },
- "_gaiaxpy_version": "2.1.4"
+ "_gaia_vega_system": "DR3_Gaia_Vega",
+ "_gaiaxpy_version": "2.2.0"
 }
