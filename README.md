@@ -7,12 +7,15 @@ variable `n_bases`, `basis_type`, Archive Parquet / FITS / VOTable / DataFrame
 I/O), and an algebra for combining XP spectra with spectra of any other resolution.
 
 GaiaXPy is not needed at runtime: its configuration tables are packaged under
-`src/torchgaiaxp/_assets/<release>` (BSD-3, DPAC CU5/DPCI; see `LICENSE-GAIAXPY`)
-and the bases are evaluated natively in torch.
+`src/torchgaiaxp/_assets/<release>` (BSD-3, DPAC CU5/DPCI; see `LICENSE-GAIAXPY`),
+the bases are evaluated natively in torch, FITS I/O uses `torchfits` (`astropy`
+fallback only when needed), and Gaia Archive TAP/ADQL + DataLink downloads work
+out of the box.
 
 ```python
 import torch
 from torchgaiaxp import XPSpectra, XPEpochSpectra, Sampled
+from torchgaiaxp import calibrate, convert, generate, plot_spectra, get_required_columns
 from torchgaiaxp.io import read_xp
 
 xp = XPSpectra.from_batch(read_xp("XpContinuousMeanSpectrum_000000-003111.csv.gz"),
@@ -23,6 +26,10 @@ xp.calibrate(sampling, with_correlation=True)      # + exact low-rank factor and
 xp.calibrate(sampling, with_correlation="factor")  # low-rank factor only (low VRAM)
 xp.convert()                         # internal, per band, pseudo-wavelengths
 xp.generate(["DR3_SDSS_Std", "DR3_JKC_Std"], error_correction=True)  # 28 systems (+ legacy aliases)
+
+# Drop-in GaiaXPy top-level entry points (files, DataFrames, .zip, hdfs://, ADQL, source IDs)
+df, wl = calibrate([1234567890, 9876543210], save_file=True, output_format="fits")
+plot_spectra(df, wl, multi=True, show_plot=False, output_path=".", output_file="xp")
 
 wl = torch.linspace(380, 950, 5000, device="cuda")
 xp(wl)                               # evaluate anywhere (per-source grids [B, G] too)
@@ -69,12 +76,13 @@ float32 agrees with float64 to ~1e-4 of the peak.
   a low-rank factor (correlated across wavelength, and coherent when the same
   XP spectrum appears multiple times in an expression), tabulated errors as an
   independent diagonal.
-- **Gaia DR4 readiness.** Multi-release assets (`register_release`, `release`,
+- **Gaia DR4 & Standalone Archive I/O.** Multi-release assets (`register_release`, `release`,
   `basis_type`), variable `n_bases` (and unequal per-band widths), provenance
-  tracking (`solution_id`, `basis_function_id`, `n_parameters`), Archive
-  Parquet/FITS/VOTable/DataFrame readers (`read_xp`, `read_archive_parquet`),
-  custom XML/YAML filters (`load_additional_systems`), and `XPEpochSpectra` for
-  transit-level `xp_epoch_spectrum` + crowding masks.
+  tracking (`solution_id`, `basis_function_id`, `n_parameters`), Parquet/FITS
+  (`torchfits` primary)/VOTable (native XML `TABLEDATA`)/CSV/ECSV/Avro/ZIP/HDFS
+  readers and writers, ESA Archive TAP/ADQL & DataLink downloads (`fetch_source_ids`,
+  `fetch_adql`), custom XML/YAML filters (`load_additional_systems`),
+  `get_required_columns`, `plot_spectra`, and `XPEpochSpectra` for transit-level DR4 spectra.
 - **Devices.** Assets are converted once per `(release, device, dtype)` and
   cached; outputs land on the input's device. Tests run on CPU, CUDA, and MPS.
 

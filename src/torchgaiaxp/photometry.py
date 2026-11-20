@@ -22,6 +22,7 @@ import math
 import re
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch import Tensor
 
@@ -230,12 +231,75 @@ def _scale_error_correction(
     result["flux_error"] = result["flux_error"] * factors
 
 
+def _df_to_photometry_results(df, release: str | None = None) -> tuple[dict[str, dict], dict[str, str]]:
+    """Extract ``generate()``-style result dict + ``{canonical: prefix}`` map from a DataFrame."""
+    rel = _assets.parse_release(release)
+    cols = set(df.columns)
+    meta = _assets.systems_meta(rel)
+    results: dict[str, dict] = {}
+    label_prefixes: dict[str, str] = {}
+    for canonical, info in meta.items():
+        if canonical.startswith("_"):
+            continue
+        bands = list(info["bands"])
+        full_label = info.get("full_label", info["label"])
+        short_label = info["label"]
+        prefix = next(
+            (
+                pfx
+                for pfx in (full_label, canonical, short_label)
+                if any(f"{pfx}_flux_{b}" in cols or f"{pfx}_flux_error_{b}" in cols for b in bands)
+            ),
+            None,
+        )
+        if prefix is None:
+            continue
+        label_prefixes[canonical] = prefix
+        present_bands = [
+            b
+            for b in bands
+            if any(f"{prefix}_{kind}_{b}" in cols for kind in ("flux", "flux_error", "mag"))
+        ]
+        # Need full band set if all bands exist, else keep present subset
+        use_bands = bands if all(f"{prefix}_mag_{b}" in cols or f"{prefix}_flux_error_{b}" in cols for b in bands) else present_bands
+        n = len(df)
+        entry: dict = {"bands": use_bands}
+        for key, col_kind in (("mag", "mag"), ("flux", "flux"), ("flux_error", "flux_error")):
+            if all(f"{prefix}_{col_kind}_{b}" in cols for b in use_bands):
+                arr = np.stack([df[f"{prefix}_{col_kind}_{b}"].to_numpy(dtype=np.float64) for b in use_bands], axis=1)
+                entry[key] = torch.as_tensor(arr, dtype=torch.float64)
+            elif key == "flux" or key == "mag":
+                entry[key] = torch.full((n, len(use_bands)), torch.nan, dtype=torch.float64)
+        results[canonical] = entry
+    if not results:
+        raise ValueError("No recognised photometric system columns found in DataFrame")
+    return results, label_prefixes
+
+
+def _apply_photometry_results_to_df(df, results: dict[str, dict], label_prefixes: dict[str, str]):
+    out_df = df.copy()
+    for name, res in results.items():
+        prefix = label_prefixes[name]
+        for j, b in enumerate(res["bands"]):
+            for key, col_kind in (("mag", "mag"), ("flux", "flux"), ("flux_error", "flux_error")):
+                col_name = f"{prefix}_{col_kind}_{b}"
+                if key in res and res[key] is not None and col_name in out_df.columns:
+                    out_df[col_name] = res[key].detach().cpu().numpy()[:, j]
+    return out_df
+
+
 def apply_colour_equation(
     results: dict[str, dict],
     *,
     release: str | None = None,
-) -> dict[str, dict]:
-    """Apply configured colour equations to a ``generate()`` output dict (returns updated copy)."""
+):
+    """Apply configured colour equations to a ``generate()`` output dict or ``DataFrame``."""
+    is_df = hasattr(results, "columns") and hasattr(results, "copy")
+    if is_df:
+        df_in = results
+        res_dict, prefixes = _df_to_photometry_results(df_in, release=release)
+        updated = apply_colour_equation(res_dict, release=release)
+        return _apply_photometry_results_to_df(df_in, updated, prefixes)
     out: dict[str, dict] = {}
     for name, res in results.items():
         r_copy = dict(res)
@@ -251,8 +315,14 @@ def apply_error_correction(
     g_mag: Tensor | None = None,
     *,
     release: str | None = None,
-) -> dict[str, dict]:
-    """Apply tabulated G-magnitude error correction factors to a ``generate()`` output dict."""
+):
+    """Apply tabulated G-magnitude error correction factors to a ``generate()`` dict or ``DataFrame``."""
+    is_df = hasattr(results, "columns") and hasattr(results, "copy")
+    if is_df:
+        df_in = results
+        res_dict, prefixes = _df_to_photometry_results(df_in, release=release)
+        updated = apply_error_correction(res_dict, g_mag=g_mag, release=release)
+        return _apply_photometry_results_to_df(df_in, updated, prefixes)
     if release is None:
         rel = next(
             (s_rel for name in results for s_rel, _, _, _, is_user in [_resolve_system(name, None)] if not is_user),

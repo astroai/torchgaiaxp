@@ -8,6 +8,8 @@ combining XP spectra with spectra of any other resolution.
 """
 
 from ._assets import available_releases, register_release
+from .api import calibrate, convert, generate, get_required_columns
+from .archive import fetch_adql, fetch_source_ids
 from .cholesky import chi2, inverse_covariance, inverse_square_root_covariance
 from .continuous import Constant, Continuous, Evaluation, Function, Sampled
 from .design import XPDesign
@@ -16,11 +18,11 @@ from .epoch import XPEpochSpectra, decode_transit_id
 from .photometry import (
     apply_colour_equation,
     apply_error_correction,
-    generate,
     load_additional_systems,
     remove_additional_systems,
     systems,
 )
+from .plotter import plot_spectra
 from .spectrum import XPSpectra, pack_correlations, unpack_correlations
 
 __version__ = "0.3.0"
@@ -37,13 +39,19 @@ __all__ = [
     "apply_colour_equation",
     "apply_error_correction",
     "available_releases",
+    "calibrate",
     "chi2",
+    "convert",
     "decode_transit_id",
+    "fetch_adql",
+    "fetch_source_ids",
     "generate",
+    "get_required_columns",
     "inverse_covariance",
     "inverse_square_root_covariance",
     "load_additional_systems",
     "pack_correlations",
+    "plot_spectra",
     "pwl_range",
     "pwl_to_wl",
     "register_release",
